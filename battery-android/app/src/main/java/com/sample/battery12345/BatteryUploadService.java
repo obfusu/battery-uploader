@@ -18,8 +18,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,19 +54,18 @@ public class BatteryUploadService extends Service {
             public void run() {
                 uploadToServer();
             }
-        }, 0, intervalInMins*1000);
+        }, 0, intervalInMins*60*1000);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String input = intent.getStringExtra("inputExtra");
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText(input)
+                .setContentTitle("Beaming battery status")
+                .setContentText(endpoint)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(pendingIntent)
                 .build();
@@ -94,12 +95,25 @@ public class BatteryUploadService extends Service {
     public void uploadToServer () {
         BatteryManager bm = (BatteryManager) getSystemService(BATTERY_SERVICE);
         int batteryLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        String url = endpoint + "?battery=" + String.valueOf(batteryLevel);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+
+        String product = Build.PRODUCT;
+        String model = Build.MODEL;
+        String manufacturer = Build.MANUFACTURER;
+
+        JSONObject params = new JSONObject();
+        try {
+            params.put("battery", batteryLevel);
+            params.put("product", product);
+            params.put("model", model);
+            params.put("manufacturer", manufacturer);
+        } catch (Exception e) {
+            Log.e("error", e.toString());
+        }
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, endpoint, params,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
-                        Log.d("response", response);
+                    public void onResponse(JSONObject response) {
+                        Log.d("response", response.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -107,6 +121,6 @@ public class BatteryUploadService extends Service {
                 Log.d("error", error.toString());
             }
         });
-        queue.add(stringRequest);
+        queue.add(request);
     }
 }

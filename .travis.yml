@@ -1,0 +1,25 @@
+language: android
+jdk: openjdk8
+dist: trusty
+android:
+  components:
+  - platform-tools
+  - tools
+  - build-tools-29.0.3
+  - android-29
+before_install:
+- yes | sdkmanager "platforms;android-29"
+before_script:
+- cp $TRAVIS_BUILD_DIR/battery-android/debug.keystore ~/.android/debug.keystore
+script:
+- cd $TRAVIS_BUILD_DIR/battery-android
+- "./gradlew assembleDebug"
+deploy:
+  provider: releases
+  api_key:
+    secure: "cD2mE7c/BpVI9SehPd2APxZlpD/ikc12F+yMSaQ/XPZ/W8cL3QkQkJlbZZz9bcr/iIgQUtUedWDFbPFdWI2czWQs6bAi2mwfA/YRAjJptaOpm3wVdtS2iASVsB3bwwZ3IsUaMOG4A9rCKZZtU7OC8jEG5VLUVDpQVPo+0oDpqpWu5xWfv7j9bvukzU6UhvgUSwMUexeKUwaaq+iSqubnKz9Y0PMQNqP09YvZJqglKXsRx28kUQrd4nrcfCEl/xMueJM2Axw9+sqz6htVwMznS+EH9GPSvIp5wqjNbakLAwW3vLQw0egWioK3swxuUjJ8uX7W7KcXh03cH8tgesKE2CAuQ6dl87r1wkc3fjnDAMFGWEV6DN7FyKPxYxcwicofPY6SJKEKhF6BifPzggm4ScN0sM58wYb9swX4Qk+CnqWoeBze5wR5EzJNP1YzFKY2GqwfooIkd5ymIOr3U9At1LV04N5ruxrwx0bGJhXtZC8wduOwpmy5OFKwCPTv17IK7LTGF+lV+XgpgIKvgM3UWUau96pdIal/QMfq1/WmpVYtdeJOq/aKpvt7alzu1XfAn8r/r4yy/xk8FLd4eARWULJDfIsdLY5cl0Pqg+dfvDECg5Xjt85zquFQgi3Guqyb9kil+XZZX/NhxnmS9wj36oWwU+Nf//w0ju1MW+4B4pk="
+  file: "$TRAVIS_BUILD_DIR/battery-android/app/build/outputs/apk/debug/app-debug.apk"
+  on:
+    repo: 77ganesh/battery-uploader
+    tags: true
+  skip_cleanup: 'true'

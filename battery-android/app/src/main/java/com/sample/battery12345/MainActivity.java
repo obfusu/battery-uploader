@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     @Override
@@ -31,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
     public void updateServerDetails (View v) {
         TextView endpointText = (TextView) findViewById(R.id.endpoint);
         try {
-            BatteryUploadService.setServerDetails(endpointText.getText().toString());
+            String endpoint = endpointText.getText().toString();
+            BatteryUploadService.setServerDetails(endpoint);
+            Toast.makeText(this, "endpoint updated\n" + endpoint, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Log.d("updateServerDetails", e.getMessage());
             Log.d("updateServerDetails", e.toString());
